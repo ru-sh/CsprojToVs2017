@@ -50,17 +50,21 @@ namespace Project2015To2017.Transforms
 
 		private PackageConfiguration PopulatePlaceHolders(Project project)
 		{
-			var rawPackageConfig = project.PackageConfiguration;
-			var assemblyAttributes = project.AssemblyAttributes;
+			var rawPackageConfig = project.PackageConfiguration ?? throw new ArgumentNullException("project.PackageConfiguration");
+			var assemblyAttributes = project.AssemblyAttributes ?? throw new ArgumentNullException("project.AssemblyAttributes");
 
+			var version = PopulatePlaceHolder("version", rawPackageConfig.Version, assemblyAttributes.InformationalVersion ?? assemblyAttributes.Version);
+			var authors = PopulatePlaceHolder("author", rawPackageConfig.Authors, assemblyAttributes.Company);
+			var description = PopulatePlaceHolder("description", rawPackageConfig.Description, assemblyAttributes.Description);
+			var copyright = PopulatePlaceHolder("copyright", rawPackageConfig.Copyright, assemblyAttributes.Copyright);
 			return new PackageConfiguration
 			{
 				//Id does not need to be specified in new project format if it is just the same as the assembly name
 				Id = rawPackageConfig.Id == "$id$" ? null : rawPackageConfig.Id,
-				Version = PopulatePlaceHolder("version", rawPackageConfig.Version, assemblyAttributes.InformationalVersion ?? assemblyAttributes.Version),
-				Authors = PopulatePlaceHolder("author", rawPackageConfig.Authors, assemblyAttributes.Company),
-				Description = PopulatePlaceHolder("description", rawPackageConfig.Description, assemblyAttributes.Description),
-				Copyright = PopulatePlaceHolder("copyright", rawPackageConfig.Copyright, assemblyAttributes.Copyright),
+				Version = version,
+				Authors = authors,
+				Description = description,
+				Copyright = copyright,
 				LicenseUrl = rawPackageConfig.LicenseUrl,
 				ProjectUrl = rawPackageConfig.ProjectUrl,
 				IconUrl = rawPackageConfig.IconUrl,

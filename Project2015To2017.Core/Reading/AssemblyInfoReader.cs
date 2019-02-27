@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -34,7 +32,9 @@ namespace Project2015To2017.Reading
 				.Select(x =>
 					{
 						var filePath = Path.IsPathRooted(x) ? x : Path.GetFullPath(Path.Combine(projectPath, x));
-						return new FileInfo(Extensions.MaybeAdjustFilePath(filePath, projectPath));
+						var fileInfo = new FileInfo(Extensions.MaybeAdjustFilePath(filePath, projectPath));
+						var exists = fileInfo.Exists;
+						return fileInfo;
 					}
 				);
 
@@ -70,12 +70,24 @@ namespace Project2015To2017.Reading
 
 			if (assemblyInfoAllFiles.Count > 1)
 			{
-				var fileList = string.Join(", ", assemblyInfoAllFiles.Select(x => rootDirectory.GetRelativePathTo(x)));
-				this.logger.LogWarning(
-					$@"Could not read assembly information, multiple files found:{Environment.NewLine}{fileList}");
+				var asmFiles = assemblyInfoAllFiles
+					.Select(info => info.FullName)
+					.ToList();
 
-				project.HasMultipleAssemblyInfoFiles = true;
-				return null;
+				var fileList = string.Join(", ", asmFiles);
+				
+				var concatenated = asmFiles.SelectMany(File.ReadAllLines)
+					.OrderByDescending(line=>line.StartsWith("using "))
+					.Distinct()
+					.ToList();
+
+				var concatenatedFilePath = Path.Combine(Path.GetDirectoryName(asmFiles[0]), "asmInfo.gen.cs");
+				File.WriteAllLines(concatenatedFilePath, concatenated);
+
+				this.logger.LogWarning(
+					$@"Multiple files found:{Environment.NewLine}{fileList}. Combining them into a single '{concatenatedFilePath}'");
+
+				assemblyInfoFiles = new[] { new FileInfo(concatenatedFilePath)}.ToList();
 			}
 
 			var assemblyInfoFile = assemblyInfoFiles[0];

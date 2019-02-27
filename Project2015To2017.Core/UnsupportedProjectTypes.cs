@@ -18,9 +18,9 @@ namespace Project2015To2017
 		{
 			if (project == null) throw new ArgumentNullException(nameof(project));
 
-			if (project.ProjectFolder != null)
-				if (CheckForEntityFramework(project))
-					return true;
+//			if (project.ProjectFolder != null)
+//				if (CheckForEntityFramework(project))
+//					return true;
 
 			var guidTypes = project.IterateProjectTypeGuids();
 
