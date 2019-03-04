@@ -16,15 +16,19 @@ namespace Project2015To2017.Transforms
 
 		private static IReadOnlyList<XElement> FilterNonEmpty(IEnumerable<XElement> groups)
 		{
-			var (keep, remove) = groups
-				.Split(x => x.HasElements
-				            || (x.HasAttributes && x.Attributes().Any(a => a.Name.LocalName != "Condition")));
-			foreach (var element in remove)
+			var list = groups.ToList();
+			foreach (var gr in list)
 			{
-				element.Remove();
+				var (remove, keep) = gr.Elements()
+					.Split(el => el.Name.LocalName == "Compile" && el.Attributes("Link").Any(link => link.Value.Contains("AssemblyInfo")));
+
+				foreach (var element in remove)
+				{
+					element.Remove();
+				}
 			}
 
-			return keep;
+			return list;
 		}
 
 		public TargetTransformationExecutionMoment ExecutionMoment =>

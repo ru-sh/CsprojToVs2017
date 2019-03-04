@@ -95,6 +95,8 @@ namespace Project2015To2017.Migrate2017.Tool
 
 			var writer = new ProjectWriter(facility.Logger, x => x.Delete(), _ => { });
 
+			var transformationSet = new MyTransformationSet();
+
 			if (legacy.Count > 0)
 			{
 				var doBackups = AskBinaryChoice("Would you like to create backups?");
@@ -112,7 +114,7 @@ namespace Project2015To2017.Migrate2017.Tool
 							continue;
 						}
 
-						foreach (var transformation in Vs15TransformationSet.TrueInstance.IterateTransformations(
+						foreach (var transformation in transformationSet.IterateTransformations(
 							facility.Logger,
 							conversionOptions))
 						{
@@ -142,7 +144,7 @@ namespace Project2015To2017.Migrate2017.Tool
 								continue;
 							}
 
-							foreach (var transformation in Vs15TransformationSet.TrueInstance.IterateTransformations(
+							foreach (var transformation in transformationSet.IterateTransformations(
 								facility.Logger,
 								conversionOptions))
 							{

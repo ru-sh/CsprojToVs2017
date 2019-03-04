@@ -33,7 +33,6 @@ namespace Project2015To2017.Reading
 					{
 						var filePath = Path.IsPathRooted(x) ? x : Path.GetFullPath(Path.Combine(projectPath, x));
 						var fileInfo = new FileInfo(Extensions.MaybeAdjustFilePath(filePath, projectPath));
-						var exists = fileInfo.Exists;
 						return fileInfo;
 					}
 				);
@@ -75,9 +74,9 @@ namespace Project2015To2017.Reading
 					.ToList();
 
 				var fileList = string.Join(", ", asmFiles);
-				
+
 				var concatenated = asmFiles.SelectMany(File.ReadAllLines)
-					.OrderByDescending(line=>line.StartsWith("using "))
+					.OrderByDescending(line => line.StartsWith("using "))
 					.Distinct()
 					.ToList();
 
@@ -87,7 +86,12 @@ namespace Project2015To2017.Reading
 				this.logger.LogWarning(
 					$@"Multiple files found:{Environment.NewLine}{fileList}. Combining them into a single '{concatenatedFilePath}'");
 
-				assemblyInfoFiles = new[] { new FileInfo(concatenatedFilePath)}.ToList();
+				assemblyInfoFiles = new[] {new FileInfo(concatenatedFilePath)}.ToList();
+
+				var oldProjAsmInfoFiles = assemblyInfoAllFiles
+					.Where(path => path.FullName.Contains(projectPath)).ToList();
+
+				project.Deletions = project.Deletions.Concat(oldProjAsmInfoFiles).ToList();
 			}
 
 			var assemblyInfoFile = assemblyInfoFiles[0];
